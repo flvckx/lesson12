@@ -76,6 +76,14 @@
     [self refreshData];
 }
 
+- (void) editProduct:(CDProduct *)product WithName:(NSString *)name quantity:(NSString *)quantity andPrice:(NSString *)price {
+    product.name = name;
+    product.quantity = [NSNumber numberWithInteger:[quantity integerValue]];
+    product.price = [NSDecimalNumber decimalNumberWithString:price];
+    [[CoreDataManager sharedInstance] saveContext];
+    [self refreshData];
+    
+}
 
 -(NSArray *) fetchProducts {
     NSManagedObjectContext *context = [CoreDataManager sharedInstance].managedObjectContext;
@@ -113,7 +121,29 @@
         
         UIAlertController *controller = [UIAlertController alertControllerWithTitle:@"Menu" message:nil preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction *action = [UIAlertAction actionWithTitle:@"Edit" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
-            
+            UIAlertController *controllerForEditing = [UIAlertController alertControllerWithTitle:@"Edit" message:nil preferredStyle:UIAlertControllerStyleAlert];
+            [controllerForEditing addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
+                textField.placeholder = @"Product name";
+            }];
+            [controllerForEditing addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
+                textField.placeholder = @"Product quantity";
+            }];
+            [controllerForEditing addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
+                textField.placeholder = @"Product price";
+            }];
+            UIAlertAction *editingAction = [UIAlertAction actionWithTitle:@"Done" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                [self editProduct:product
+                         WithName:controllerForEditing.textFields[0].text
+                         quantity:controllerForEditing.textFields[1].text
+                         andPrice:controllerForEditing.textFields[2].text];
+
+            }];
+            [controllerForEditing addAction:editingAction];
+            editingAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+                
+            }];
+            [controllerForEditing addAction:editingAction];
+            [self presentViewController:controllerForEditing animated:YES completion:NULL];
         }];
         [controller addAction:action];
         action = [UIAlertAction actionWithTitle:@"Mark as purchased" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {

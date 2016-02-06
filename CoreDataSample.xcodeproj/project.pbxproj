@@ -23,6 +23,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0CB8086A1C66407F001E6C5A /* CoreDataSample 2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "CoreDataSample 2.xcdatamodel"; sourceTree = "<group>"; };
 		1C4C40041C5FC47600FF119A /* CoreDataSample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CoreDataSample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1C4C40081C5FC47600FF119A /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		1C4C400A1C5FC47600FF119A /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -356,6 +357,7 @@
 		1C4C40131C5FC47600FF119A /* CoreDataSample.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				0CB8086A1C66407F001E6C5A /* CoreDataSample 2.xcdatamodel */,
 				1C4C40141C5FC47600FF119A /* CoreDataSample.xcdatamodel */,
 			);
 			currentVersion = 1C4C40141C5FC47600FF119A /* CoreDataSample.xcdatamodel */;

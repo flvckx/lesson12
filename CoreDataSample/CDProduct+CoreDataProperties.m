@@ -14,6 +14,7 @@
 @implementation CDProduct (CoreDataProperties)
 
 @dynamic name;
+@dynamic quantity;
 @dynamic price;
 @dynamic actualPrice;
 @dynamic complete;
