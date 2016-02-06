@@ -56,9 +56,11 @@
     [controller addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
         textField.placeholder = @"Basket name";
     }];
+    [controller addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
+        textField.placeholder = @"Quantity";
+    }];
     action = [UIAlertAction actionWithTitle:@"Create" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        UITextField *textField = controller.textFields[0];
-        [self createProductWithName:textField.text];
+        [self createProductWithName:controller.textFields[0].text andQuantity:controller.textFields[1].text];
     }];
     
     [controller addAction:action];
@@ -66,11 +68,12 @@
 }
 
 
--(void) createProductWithName:(NSString *)name {
+-(void) createProductWithName:(NSString *)name andQuantity:(NSString *)quantity {
     NSManagedObjectContext *context = [CoreDataManager sharedInstance].managedObjectContext;
     CDProduct *product = [NSEntityDescription insertNewObjectForEntityForName:[[CDProduct class] description]
                                                      inManagedObjectContext:context];
     product.name = name;
+    product.quantity = [NSNumber numberWithInteger:[quantity integerValue]];
     [self.basket addProductsObject:product];
     [[CoreDataManager sharedInstance] saveContext];
     [self refreshData];
