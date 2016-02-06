@@ -110,12 +110,31 @@
     cell.textLabel.text = product.name;
     if ([product.complete boolValue]) {
         cell.accessoryType = UITableViewCellAccessoryCheckmark;
+        
+        UIAlertController *controller = [UIAlertController alertControllerWithTitle:@"Menu" message:nil preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction *action = [UIAlertAction actionWithTitle:@"Edit" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
+            
+        }];
+        [controller addAction:action];
+        action = [UIAlertAction actionWithTitle:@"Mark as purchased" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            
+        }];
+        [controller addAction:action];
+        action = [UIAlertAction actionWithTitle:@"Delete" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
+            
+        }];
+        [controller addAction:action];
+        action = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+            
+        }];
+        [controller addAction:action];
+        
+        [self presentViewController:controller animated:YES completion:NULL];
     } else {
         cell.accessoryType = UITableViewCellAccessoryNone;
     }
     return cell;
 }
-
 
 /*
 // Override to support conditional editing of the table view.
@@ -136,7 +155,9 @@
         [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
     } else if (editingStyle == UITableViewCellEditingStyleInsert) {
         // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
+    }
+    [[CoreDataManager sharedInstance] saveContext];
+    [self refreshData];
 }
 
 
