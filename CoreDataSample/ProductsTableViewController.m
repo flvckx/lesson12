@@ -79,13 +79,18 @@
     [self refreshData];
 }
 
-- (void) editProduct:(CDProduct *)product WithName:(NSString *)name quantity:(NSString *)quantity andPrice:(NSString *)price {
+- (void) editProduct:(CDProduct *)product withName:(NSString *)name quantity:(NSString *)quantity andPrice:(NSString *)price {
     product.name = name;
     product.quantity = [NSNumber numberWithInteger:[quantity integerValue]];
     product.price = [NSDecimalNumber decimalNumberWithString:price];
     [[CoreDataManager sharedInstance] saveContext];
     [self refreshData];
-    
+}
+
+- (void) editPrice:(NSString *)price forProduct:(CDProduct *)product {
+    product.price = [NSDecimalNumber decimalNumberWithString:price];
+    [[CoreDataManager sharedInstance] saveContext];
+    [self refreshData];
 }
 
 -(NSArray *) fetchProducts {
@@ -122,6 +127,20 @@
     if ([product.complete boolValue]) {
         cell.accessoryType = UITableViewCellAccessoryCheckmark;
         
+        UIAlertController *priceDetailsController = [UIAlertController alertControllerWithTitle:@"Price" message:@"Enter the product price: " preferredStyle:UIAlertControllerStyleAlert];
+        [priceDetailsController addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
+            textField.placeholder = @"Price";
+        }];
+        UIAlertAction *priceEnteredAction = [UIAlertAction actionWithTitle:@"Done" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            
+        }];
+        [priceDetailsController addAction:priceEnteredAction];
+        
+        [self presentViewController:priceDetailsController animated:YES completion:NULL];
+        
+    } else {
+        cell.accessoryType = UITableViewCellAccessoryNone;
+        
         UIAlertController *controller = [UIAlertController alertControllerWithTitle:@"Menu" message:nil preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction *action = [UIAlertAction actionWithTitle:@"Edit" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
             UIAlertController *controllerForEditing = [UIAlertController alertControllerWithTitle:@"Edit" message:nil preferredStyle:UIAlertControllerStyleAlert];
@@ -136,10 +155,10 @@
             }];
             UIAlertAction *editingAction = [UIAlertAction actionWithTitle:@"Done" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
                 [self editProduct:product
-                         WithName:controllerForEditing.textFields[0].text
+                         withName:controllerForEditing.textFields[0].text
                          quantity:controllerForEditing.textFields[1].text
                          andPrice:controllerForEditing.textFields[2].text];
-
+                
             }];
             [controllerForEditing addAction:editingAction];
             editingAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
@@ -163,8 +182,7 @@
         [controller addAction:action];
         
         [self presentViewController:controller animated:YES completion:NULL];
-    } else {
-        cell.accessoryType = UITableViewCellAccessoryNone;
+
     }
     return cell;
 }
