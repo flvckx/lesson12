@@ -16,6 +16,7 @@
 @interface ProductsTableViewController () <UITableViewDelegate>
 
 @property (strong, nonatomic) NSArray *items;
+@property (strong, nonatomic) NSMutableArray *purchasedItems;
 @property (nonatomic, strong) CDBasket *basket;
 
 @end
@@ -37,6 +38,12 @@
     [self fetchProducts];
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addNewProduct:)];
     [self refreshData];
+    
+    for (CDProduct *product in self.items) {
+        if ([product.complete boolValue]) {
+            [self.purchasedItems addObject:product];
+        }
+    }
 }
 
 #pragma mark - Private methods
@@ -116,30 +123,65 @@
 #pragma mark - Table view data source
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return [self.items count];
+    if (section == 0) {
+        return [self.purchasedItems count];
+    } else {
+        return [self.items count];
+    }
 }
 
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
+    if (section == 0) {
+        return @"Purchased";
+    } else {
+        return @"Not purchased";
+    }
+}
+
+- (NSInteger) numberOfSectionsInTableView:(UITableView *)tableView {
+    return 2;
+}
+
+- (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section {
+    if (section == 0) {
+        UIView *footer = [[UIView alloc] initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, 40)];
+        NSDecimalNumber *sum = [NSDecimalNumber decimalNumberWithString:@"0"];
+        for (CDProduct *product in self.purchasedItems) {
+            [sum decimalNumberByAdding:product.price];
+        }
+        
+        UILabel *lbl = [[UILabel alloc]initWithFrame:footer.frame];
+        lbl.backgroundColor = [UIColor clearColor];
+        lbl.text = [sum stringValue];
+        lbl.textAlignment = NSTextAlignmentCenter;
+        [footer addSubview:lbl];
+        
+        return footer;
+    } else
+        return  nil;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
+    return 40;
+}
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"CellIdentifier" forIndexPath:indexPath];
     CDProduct *product = self.items[indexPath.row];
     cell.textLabel.text = product.name;
+    
+    if (indexPath.section == 0) {
+        CDProduct *theCellData = [self.purchasedItems objectAtIndex:indexPath.row];
+        NSString *cellValue = theCellData.name;
+        cell.textLabel.text = cellValue;
+    } else {
+        CDProduct *theCellData = [self.items objectAtIndex:indexPath.row];
+        NSString *cellValue =theCellData.name;
+        cell.textLabel.text = cellValue;
+    }
+    
     if ([product.complete boolValue]) {
         cell.accessoryType = UITableViewCellAccessoryCheckmark;
-        
-        UIAlertController *priceDetailsController = [UIAlertController alertControllerWithTitle:@"Price" message:@"Enter the product price: " preferredStyle:UIAlertControllerStyleAlert];
-        [priceDetailsController addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
-            textField.placeholder = @"Price";
-        }];
-        UIAlertAction *priceEnteredAction = [UIAlertAction actionWithTitle:@"Done" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-            
-        }];
-        [priceDetailsController addAction:priceEnteredAction];
-        
-        [self presentViewController:priceDetailsController animated:YES completion:NULL];
-        
-    } else {
-        cell.accessoryType = UITableViewCellAccessoryNone;
         
         UIAlertController *controller = [UIAlertController alertControllerWithTitle:@"Menu" message:nil preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction *action = [UIAlertAction actionWithTitle:@"Edit" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
@@ -169,11 +211,41 @@
         }];
         [controller addAction:action];
         action = [UIAlertAction actionWithTitle:@"Mark as purchased" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            UIAlertController *priceDetailsController = [UIAlertController alertControllerWithTitle:@"Price" message:@"Enter the product price: " preferredStyle:UIAlertControllerStyleAlert];
+            [priceDetailsController addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
+                textField.placeholder = @"Price";
+            }];
+            UIAlertAction *priceEnteredAction = [UIAlertAction actionWithTitle:@"Done" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                
+            }];
+            [priceDetailsController addAction:priceEnteredAction];
             
+            [self presentViewController:priceDetailsController animated:YES completion:NULL];
+            
+            [self.purchasedItems addObject:product];
+            
+            NSMutableArray *items = [self.items mutableCopy];
+            [items removeObject:product];
+            self.items = [items copy];
+            
+            [tableView beginUpdates];
+            [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+            
+            NSIndexPath *indexPathForInsertOperation = [NSIndexPath indexPathForRow:self.purchasedItems.count inSection:0];
+            [tableView insertRowsAtIndexPaths:@[indexPathForInsertOperation] withRowAnimation:UITableViewRowAnimationNone];
+            //[tableView moveRowAtIndexPath:indexPath toIndexPath:indexPathForInsertOperation];
+            [tableView endUpdates];
+
         }];
         [controller addAction:action];
         action = [UIAlertAction actionWithTitle:@"Delete" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
+            CDProduct *product = self.items[indexPath.row];
+            [[CoreDataManager sharedInstance].managedObjectContext deleteObject:product];
+            NSMutableArray *items = [self.items mutableCopy];
+            [items removeObject:product];
+            self.items = [items copy];
             
+            [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
         }];
         [controller addAction:action];
         action = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
@@ -182,7 +254,13 @@
         [controller addAction:action];
         
         [self presentViewController:controller animated:YES completion:NULL];
-
+//        [[CoreDataManager sharedInstance] saveContext];
+//        [self refreshData];
+    } else {
+        cell.accessoryType = UITableViewCellAccessoryNone;
+        
+//        [[CoreDataManager sharedInstance] saveContext];
+//        [self refreshData];
     }
     return cell;
 }
